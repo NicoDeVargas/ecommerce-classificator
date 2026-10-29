@@ -1,0 +1,23 @@
+# segredos
+.env
+.env.*
+!.env.example
+
+# dados brutos e pesos (vão para o Hugging Face, não para o git)
+data/raw/
+models/
+*.onnx
+*.safetensors
+*.bin
+app/public/models/
+
+# ambiente e build
+.venv/
+__pycache__/
+node_modules/
+app/dist/
+
+# capturas de verificação
+screenshots/
+*.log
+app/public/ort/

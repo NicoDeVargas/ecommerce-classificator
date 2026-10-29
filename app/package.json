@@ -1,0 +1,25 @@
+{
+  "name": "radar-avaliacoes",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/copiar-ort.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/copiar-ort.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "achados": "node scripts/gerar-achados.mjs",
+    "test": "node --test scripts/"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "3.8.1",
+    "papaparse": "5.5.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "5.2.0",
+    "vite": "7.3.6"
+  }
+}
