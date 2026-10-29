@@ -1,0 +1,8 @@
+,atraso,nao_recebido,defeito,divergente,atendimento,qualidade,elogio
+atraso,2,0,0,0,0,0,0
+nao_recebido,0,22,0,0,0,0,0
+defeito,0,0,7,1,0,1,0
+divergente,0,0,0,11,0,1,0
+atendimento,0,3,0,2,1,1,0
+qualidade,0,0,4,5,0,35,5
+elogio,0,0,1,0,0,0,87

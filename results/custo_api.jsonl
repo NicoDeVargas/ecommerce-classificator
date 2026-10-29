@@ -295,3 +295,11 @@
 {"split": "treino", "lote": 25, "modo": "batches", "n": 25, "input_tokens": 2198, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 1181, "output_tokens": 930, "usd": 0.01381}
 {"split": "treino", "lote": 25, "modo": "batches", "n": 25, "input_tokens": 2024, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 1181, "output_tokens": 1093, "usd": 0.0151}
 {"split": "treino", "lote": 25, "modo": "sincrono", "n": 2, "input_tokens": 103, "cache_creation_input_tokens": 1181, "cache_read_input_tokens": 0, "output_tokens": 51, "usd": 0.00734}
+{"split": "gab_teste", "lote": 25, "modo": "sincrono", "n": 25, "input_tokens": 1929, "cache_creation_input_tokens": 1181, "cache_read_input_tokens": 0, "output_tokens": 983, "usd": 0.03328}
+{"split": "gab_teste", "lote": 25, "modo": "sincrono", "n": 25, "input_tokens": 2233, "cache_creation_input_tokens": 1181, "cache_read_input_tokens": 0, "output_tokens": 1028, "usd": 0.0354}
+{"split": "gab_teste", "lote": 25, "modo": "sincrono", "n": 25, "input_tokens": 1857, "cache_creation_input_tokens": 1181, "cache_read_input_tokens": 0, "output_tokens": 1104, "usd": 0.03541}
+{"split": "gab_teste", "lote": 25, "modo": "sincrono", "n": 25, "input_tokens": 1934, "cache_creation_input_tokens": 1181, "cache_read_input_tokens": 0, "output_tokens": 1097, "usd": 0.03558}
+{"split": "gab_teste", "lote": 25, "modo": "sincrono", "n": 14, "input_tokens": 1284, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 1181, "output_tokens": 733, "usd": 0.02003}
+{"split": "gab_teste", "lote": 25, "modo": "sincrono", "n": 25, "input_tokens": 1906, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 1181, "output_tokens": 992, "usd": 0.0277}
+{"split": "gab_teste", "lote": 25, "modo": "sincrono", "n": 25, "input_tokens": 1559, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 1181, "output_tokens": 879, "usd": 0.02405}
+{"split": "gab_teste", "lote": 25, "modo": "sincrono", "n": 25, "input_tokens": 1957, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 1181, "output_tokens": 1236, "usd": 0.03278}

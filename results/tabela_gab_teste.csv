@@ -1,0 +1,12 @@
+modelo,acerto,f1_macro,ece,ms_mediana,tok_in_por_1k,tok_out_por_1k,usd_por_1k,fonte,n,usd_por_1k_batches
+tfidf,0.6984,0.5554,0.0648,0.6,0.0,0.0,0.0,estudo avaliacoes-decisao,,
+bertimbau,0.7302,0.5996,0.1952,63.6,0.0,0.0,0.0,estudo avaliacoes-decisao,,
+laya,0.5185,0.3086,0.1765,232.1,0.0,0.0,0.0,estudo avaliacoes-decisao,,
+llm-claude-haiku-5-5,0.7302,0.5893,0.2698,1091.8,893349.0,36460.0,0.108,estudo avaliacoes-decisao,,
+llm-claude-haiku-5-5-regua,0.8307,0.7791,0.1693,1106.5,1397349.0,36582.0,0.158,estudo avaliacoes-decisao,,
+llm-claude-opus-5-5,0.8254,0.7471,0.1746,1871.3,780349.0,84048.0,4.802,estudo avaliacoes-decisao,,
+llm-claude-opus-5-5-regua,0.8677,0.7775,0.1323,1767.7,1272349.0,92577.0,6.941,estudo avaliacoes-decisao,,
+llm-claude-opus-5-5-regua-lote25,0.873,0.7926,,,,,1.292,este repositório (professor),189.0,0.6
+radar-pytorch-fp32,0.8571,0.7033,0.0522,42.3,,,0.0,este repositório (aluno),189.0,
+radar-onnx-fp32,0.8571,0.7033,0.0522,19.0,,,0.0,este repositório (aluno),189.0,
+radar-onnx-int8,0.873,0.762,0.0273,8.3,,,0.0,este repositório (aluno),189.0,

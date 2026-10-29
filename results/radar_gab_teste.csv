@@ -1,0 +1,4 @@
+modelo,n,acerto,f1_macro,ece,ms_mediana
+radar-pytorch-fp32,189,0.8571,0.7033,0.0522,42.3
+radar-onnx-fp32,189,0.8571,0.7033,0.0522,19.0
+radar-onnx-int8,189,0.873,0.762,0.0273,8.3

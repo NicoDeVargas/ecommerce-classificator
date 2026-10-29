@@ -194,7 +194,8 @@ def via_batches(client, df, split_name, lote, f):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("split", choices=["gab_dev", "treino"])  # gab_teste de propósito fora daqui
+    ap.add_argument("split", choices=["gab_dev", "treino", "gab_teste"])
+    ap.add_argument("--final", action="store_true", help="exigido para gab_teste: só para a medição final")
     ap.add_argument("--lote", type=int, default=25)
     ap.add_argument("--batches", action="store_true")
     a = ap.parse_args()

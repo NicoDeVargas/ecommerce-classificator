@@ -1,0 +1,59 @@
+# Publica o app no GitHub Pages.
+#
+# Desligado de propósito: só roda à mão (Actions → "Publicar no GitHub Pages" → Run workflow),
+# depois que o modelo estiver no Hugging Face e o Pages estiver ativado no repositório
+# (Settings → Pages → Source: GitHub Actions).
+#
+# O navegador baixa o modelo do Hugging Face (repositório em vars.HF_MODEL_REPO, ex.:
+# NicoDeVargas/radar-avaliacoes-bertimbau). Só o modelo vem de lá; as avaliações do
+# vendedor continuam sendo classificadas no próprio navegador.
+name: Publicar no GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Conferir o repositório do modelo
+        run: test -n "${{ vars.HF_MODEL_REPO }}" || { echo "Defina a variável HF_MODEL_REPO (Settings → Variables)"; exit 1; }
+      - run: npm ci
+      - run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_MODEL_REMOTE: 'true'
+          VITE_MODEL_ID: ${{ vars.HF_MODEL_REPO }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

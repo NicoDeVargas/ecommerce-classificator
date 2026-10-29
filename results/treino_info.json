@@ -1,0 +1,51 @@
+{
+  "base": "neuralmind/bert-base-portuguese-cased",
+  "professor": "claude-opus-5-5 + régua, lotes de 25",
+  "n_treino": 4400,
+  "n_val": 300,
+  "epocas": 3,
+  "pesos_classe": false,
+  "temperatura": 1.4500000000000008,
+  "minutos_treino": 30.4,
+  "historico": [
+    {
+      "epoca": 1,
+      "val_professor": {
+        "n": 300,
+        "acerto": 0.85,
+        "f1_macro": 0.7435
+      },
+      "gab_dev": {
+        "n": 102,
+        "acerto": 0.902,
+        "f1_macro": 0.6429
+      }
+    },
+    {
+      "epoca": 2,
+      "val_professor": {
+        "n": 300,
+        "acerto": 0.8733,
+        "f1_macro": 0.7363
+      },
+      "gab_dev": {
+        "n": 102,
+        "acerto": 0.8922,
+        "f1_macro": 0.7159
+      }
+    },
+    {
+      "epoca": 3,
+      "val_professor": {
+        "n": 300,
+        "acerto": 0.8767,
+        "f1_macro": 0.7353
+      },
+      "gab_dev": {
+        "n": 102,
+        "acerto": 0.9216,
+        "f1_macro": 0.8093
+      }
+    }
+  ]
+}
