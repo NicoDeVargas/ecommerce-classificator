@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Check, Copy } from '@phosphor-icons/react';
 import { NOME } from '../engine/categorias.js';
 import { dataCurta } from '../formato.js';
 
@@ -17,48 +18,59 @@ function Item({ item, respondida, alternar }) {
   };
   return (
     <li className={'item fila-item' + (respondida ? ' is-respondida' : '')}>
-      <p className="fila-meta">
-        <span className={`motivo motivo-${item.categoria}`}>{NOME[item.categoria]}</span>
-        {[item.estado, item.data && dataCurta(item.data)].filter(Boolean).join(', ')}
-        {item.revisar && <span className="revisar"> · motivo incerto, confira</span>}
-      </p>
+      <div className="fila-topo">
+        <p className="fila-meta">
+          <b>{NOME[item.categoria]}</b>
+          {[item.estado, item.data && dataCurta(item.data)].filter(Boolean).map((x) => (
+            <span key={x}>{x}</span>
+          ))}
+          {item.revisar && <span className="revisar">motivo incerto</span>}
+        </p>
+        <button
+          type="button"
+          className={'marcar' + (respondida ? ' is-feito' : '')}
+          onClick={alternar}
+          aria-pressed={respondida}
+          aria-label={respondida ? 'Respondida' : 'Marcar como respondida'}
+          title={respondida ? 'Respondida' : 'Marcar como respondida'}
+        >
+          <Check size={16} weight="bold" aria-hidden="true" />
+        </button>
+      </div>
       {item.produto && <h3>{item.produto}</h3>}
       <blockquote className="citacao">
         <p>{item.texto}</p>
       </blockquote>
-      <div className="fila-acoes">
-        <button type="button" className="btn" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
-          {aberto ? 'Fechar resposta' : 'Escrever resposta'}
+      {!aberto && (
+        <button type="button" className="btn-quieto fila-abrir" onClick={() => setAberto(true)} aria-expanded={false}>
+          Responder
         </button>
-        <button type="button" className="btn btn-sec" onClick={alternar} aria-pressed={respondida}>
-          {respondida ? 'Respondida' : 'Marcar como respondida'}
-        </button>
-      </div>
+      )}
       {aberto && (
         <div className="rascunho">
-          <label className="rotulo" htmlFor={'r-' + item.id}>
-            Rascunho pronto para editar
-          </label>
-          <textarea id={'r-' + item.id} value={texto} onChange={(e) => setTexto(e.target.value)} rows={5} />
-          <button type="button" className="btn" onClick={copiar}>
-            {copiado ? 'Copiada' : 'Copiar resposta'}
-          </button>
+          <textarea aria-label="Resposta" value={texto} onChange={(e) => setTexto(e.target.value)} rows={5} />
+          <div className="rascunho-acoes">
+            <button type="button" className="btn" onClick={copiar}>
+              <Copy size={16} aria-hidden="true" /> {copiado ? 'Copiada' : 'Copiar'}
+            </button>
+            <button type="button" className="btn-quieto" onClick={() => setAberto(false)} aria-expanded={true}>
+              Fechar
+            </button>
+          </div>
         </div>
       )}
     </li>
   );
 }
 
-export function Fila({ itens, respondidas, alternar, nota }) {
+export function Fila({ itens, respondidas, alternar }) {
   const [limite, setLimite] = useState(30);
   const pendentes = itens.filter((i) => !respondidas.has(i.id)).length;
   return (
     <section className="secao secao-fila">
       <header className="secao-cab">
-        <h2>Responder clientes</h2>
-        <p>
-          {pendentes} sem resposta. Primeiro quem não recebeu, recebeu com defeito ou ficou sem atendimento.{nota && ` ${nota}`}
-        </p>
+        <h2 className="so-leitor">Responder clientes</h2>
+        <p>{pendentes} sem resposta, os mais graves primeiro. Cada uma já vem com um rascunho.</p>
       </header>
       {!itens.length && <p className="vazio">Nenhuma avaliação com esses filtros.</p>}
       <ol className="itens">

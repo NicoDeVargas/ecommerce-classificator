@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { DownloadSimple, MagnifyingGlass, Target } from '@phosphor-icons/react';
 import { AlertasAnuncio, AlertasLogistica, AlertasLote, Panorama } from './componentes/Alertas.jsx';
 import { Envio } from './componentes/Envio.jsx';
 import { Fila } from './componentes/Fila.jsx';
@@ -185,11 +186,7 @@ export default function App() {
     <div className="app">
       <header className="topo">
         <a className="marca" href="#modo=demo&aba=anuncio" onClick={() => setModo('demo')}>
-          <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
-            <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" strokeWidth="2.4" />
-            <path d="M16 16 26 9" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-            <circle cx="22" cy="11.8" r="2.6" fill="var(--fornecedor)" />
-          </svg>
+          <Target size={22} weight="duotone" aria-hidden="true" />
           Radar de avaliações
         </a>
         <nav className="modos" aria-label="Fonte dos dados">
@@ -212,20 +209,17 @@ export default function App() {
         {achados && (
           <>
             <section className="resumo" aria-label="Resumo">
-              <h1>
-                {num(totalAlertas)} problemas pedem ação{contagem.fila ? ` e ${num(contagem.fila)} clientes esperam resposta` : ''}.
-              </h1>
+              <h1>{num(totalAlertas)} problemas pedem ação.</h1>
               {modo === 'demo' ? (
                 <p>
-                  Exemplo com {num(achados.meta.total)} avaliações reais da Americanas{periodo ? `, ${periodo}` : ''}. Para ver as da sua
-                  loja, use <button type="button" className="link" onClick={() => setModo('csv')}>Minhas avaliações</button>.
+                  {num(achados.meta.total)} avaliações reais da Americanas{periodo ? `, ${periodo}` : ''}.
                 </p>
               ) : (
                 <p>
                   {achados.meta.fonte}: {num(achados.meta.total)} avaliações classificadas no seu navegador
                   {achados.meta.msPorAvaliacao ? `, ${Math.round(achados.meta.msPorAvaliacao)} ms cada` : ''}.{' '}
                   <button type="button" className="link" onClick={exportarClassificadas}>
-                    Baixar todas classificadas
+                    Baixar classificadas
                   </button>
                 </p>
               )}
@@ -251,13 +245,16 @@ export default function App() {
                 {atual.filtros.length > 0 && (
                   <div className="filtros" role="search">
                     {mostra('busca') && (
-                      <input
-                        type="search"
-                        aria-label="Buscar produto ou trecho"
-                        value={filtros.busca}
-                        placeholder="Buscar produto ou trecho"
-                        onChange={(e) => setFiltros({ ...filtros, busca: e.target.value })}
-                      />
+                      <label className="busca">
+                        <MagnifyingGlass size={16} aria-hidden="true" />
+                        <input
+                          type="search"
+                          aria-label="Buscar produto ou trecho"
+                          value={filtros.busca}
+                          placeholder="Buscar produto ou trecho"
+                          onChange={(e) => setFiltros({ ...filtros, busca: e.target.value })}
+                        />
+                      </label>
                     )}
                     {mostra('departamento') && departamentos.length > 0 && (
                       <select
@@ -289,8 +286,8 @@ export default function App() {
                         ))}
                       </select>
                     )}
-                    <button type="button" className="btn btn-sec" onClick={aba === 'fila' ? exportarFila : exportarAlertas}>
-                      Exportar CSV
+                    <button type="button" className="btn-quieto" onClick={aba === 'fila' ? exportarFila : exportarAlertas}>
+                      <DownloadSimple size={16} aria-hidden="true" /> CSV
                     </button>
                   </div>
                 )}
@@ -309,11 +306,6 @@ export default function App() {
                       s.has(id) ? s.delete(id) : s.add(id);
                       setRespondidas(s);
                     }}
-                    nota={
-                      achados.meta.parametros?.fila?.maxPorCategoria < 5000
-                        ? `No exemplo, a fila guarda as ${achados.meta.parametros.fila.maxPorCategoria} mais recentes de cada motivo.`
-                        : null
-                    }
                   />
                 )}
                 {aba === 'panorama' && <Panorama achados={achados} />}

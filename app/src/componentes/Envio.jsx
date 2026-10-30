@@ -72,7 +72,6 @@ export function Envio({ aoClassificar, estado }) {
         />
         {!previa && (
           <>
-            <p>Arraste o arquivo aqui ou</p>
             <button type="button" className="btn" onClick={() => input.current.click()} disabled={ocupado}>
               Escolher CSV
             </button>

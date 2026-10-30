@@ -16,12 +16,10 @@ function Citacao({ prova }) {
 function Mais({ provas, termos, children }) {
   const resto = provas?.slice(1) || [];
   if (!resto.length && !termos?.length && !children) return null;
-  const partes = [resto.length && `${resto.length} ${resto.length === 1 ? 'comentário' : 'comentários'}`, termos?.length && 'palavras que se repetem']
-    .filter(Boolean)
-    .join(' e ');
+  const partes = resto.length ? `+${resto.length} ${resto.length === 1 ? 'comentário' : 'comentários'}` : 'Palavras que se repetem';
   return (
     <details className="mais">
-      <summary>{children ? 'Ver detalhes' : `Mais ${partes}`}</summary>
+      <summary>{children ? 'Semana a semana' : partes}</summary>
       {children}
       {termos?.length > 0 && (
         <p className="termos">
@@ -42,7 +40,7 @@ function Mais({ provas, termos, children }) {
 function Cabecalho({ titulo, children }) {
   return (
     <header className="secao-cab">
-      <h2>{titulo}</h2>
+      <h2 className="so-leitor">{titulo}</h2>
       <p>{children}</p>
     </header>
   );
@@ -57,7 +55,7 @@ export function AlertasAnuncio({ dados, alertas }) {
   return (
     <section className="secao secao-anuncio">
       <Cabecalho titulo="Corrigir anúncios">
-        Produtos que muitos clientes dizem ter vindo diferente do anunciado. Revise título, fotos e especificações.
+        Muitos clientes dizem que veio diferente do anunciado. Revise título, fotos e especificações.
       </Cabecalho>
       {!alertas.length && <Vazio>Nenhum produto com reclamação fora do normal de “diferente do anúncio”.</Vazio>}
       <ol className="itens">
@@ -65,7 +63,7 @@ export function AlertasAnuncio({ dados, alertas }) {
           <li className="item" key={a.produto}>
             <h3>{a.produto}</h3>
             <p className="fato">
-              <b>{pct(a.taxa)}</b> das {num(a.total)} avaliações dizem que veio diferente do anúncio, {vezes(a.vezes)} a média da loja.
+              <b>{pct(a.taxa)}</b> das {num(a.total)} avaliações dizem que veio diferente do anúncio ({vezes(a.vezes)} a média).
             </p>
             <Citacao prova={a.provas[0]} />
             <Mais provas={a.provas} termos={a.termos} />
@@ -81,7 +79,7 @@ export function AlertasLote({ dados, alertas }) {
   return (
     <section className="secao secao-lote">
       <Cabecalho titulo="Falar com fornecedores">
-        Semanas em que as queixas de defeito e qualidade de um produto dispararam. Confira o lote antes de seguir vendendo.
+        As queixas de defeito dispararam numa semana. Confira o lote antes de seguir vendendo.
       </Cabecalho>
       {!alertas.length && <Vazio>Nenhum pico de defeito ou qualidade fora do normal.</Vazio>}
       <ol className="itens">
@@ -114,7 +112,7 @@ export function AlertasLogistica({ dados, alertas, estadoFiltro }) {
   return (
     <section className="secao secao-logistica">
       <Cabecalho titulo="Cobrar entregas">
-        Estados e meses em que “não recebi” e “atrasou” ficaram bem acima dos outros estados. Cobre a transportadora da região.
+        “Não recebi” e “atrasou” bem acima dos outros estados. Cobre a transportadora da região.
       </Cabecalho>
       {!alertas.length && <Vazio>Nenhum estado com problema de entrega fora do normal no período.</Vazio>}
       <ol className="itens">
@@ -124,8 +122,7 @@ export function AlertasLogistica({ dados, alertas, estadoFiltro }) {
               {a.estado} em {mesNome(a.mes)}
             </h3>
             <p className="fato">
-              <b>{pct(a.taxa, 1)}</b> das avaliações falam de entrega, {vezes(a.vezes)} os outros estados no mesmo mês.{' '}
-              {num(a.nao_recebido)} clientes ainda não tinham recebido.
+              <b>{pct(a.taxa, 1)}</b> das avaliações falam de entrega ({vezes(a.vezes)} os outros estados), e {num(a.nao_recebido)} clientes ainda não tinham recebido.
             </p>
             <Citacao prova={a.provas[0]} />
           </li>
@@ -133,7 +130,7 @@ export function AlertasLogistica({ dados, alertas, estadoFiltro }) {
       </ol>
       {estados.length > 0 && (
         <details className="mais mais-solto">
-          <summary>Ver todos os estados</summary>
+          <summary>Todos os estados</summary>
           <BarrasH
             itens={estados.slice(0, 12).map((e) => ({
               rotulo: e.estado,
@@ -176,7 +173,7 @@ export function Panorama({ achados }) {
   return (
     <section className="secao secao-panorama">
       <Cabecalho titulo="Do que falam">
-        {pct(problemas)} das avaliações relatam algum problema. O resto é elogio.
+        {pct(problemas)} das avaliações relatam algum problema.
       </Cabecalho>
       <BarrasH itens={itens} formatar={(v) => pct(v, 1)} />
       {deptos.length > 0 && (
