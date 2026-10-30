@@ -214,6 +214,6 @@ model-card/    README pronto para o Hugging Face
 
 ## Créditos e licença
 
-Licença do código e dos pesos: a definir pelo dono antes de publicar (o model card sugere MIT). Dados: [B2W-Reviews01](https://huggingface.co/datasets/ruanchaves/b2w-reviews01)
+Licença do código e dos pesos: MIT (ver [LICENSE](LICENSE)). Modelo no Hugging Face: [NicoDeVargas/radar-avaliacoes-bertimbau](https://huggingface.co/NicoDeVargas/radar-avaliacoes-bertimbau). Dados: [B2W-Reviews01](https://huggingface.co/datasets/ruanchaves/b2w-reviews01)
 (Real et al., 2019, CC BY 4.0). Modelo base: [BERTimbau](https://huggingface.co/neuralmind/bert-base-portuguese-cased).
 Estudo de origem (comparação de tipos de modelo): repositório local `avaliacoes-decisao`.
