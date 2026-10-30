@@ -99,8 +99,16 @@ function prova(r, max = 320) {
 }
 
 function melhoresProvas(rows, n = 3) {
+  const vistos = new Set();
   return [...rows]
     .sort((a, b) => b.confianca - a.confianca || String(b.data).localeCompare(String(a.data)))
+    .filter((r) => {
+      // a mesma avaliação às vezes aparece duplicada na base: mostra uma vez só
+      const k = String(r.texto).trim().toLowerCase();
+      if (vistos.has(k)) return false;
+      vistos.add(k);
+      return true;
+    })
     .slice(0, n)
     .map((r) => prova(r));
 }
@@ -241,12 +249,13 @@ function alertasLogistica(rows, P) {
     })
     .sort((a, b) => b.taxa - a.taxa);
   const meses = [...new Set(comData.map((r) => r.data.slice(0, 7)))].sort();
-  const taxaMes = Object.fromEntries(
+  const doMes = Object.fromEntries(
     meses.map((m) => {
       const rs = comData.filter((r) => r.data.startsWith(m));
-      return [m, rs.filter(eh).length / rs.length];
+      return [m, { n: rs.length, k: rs.filter(eh).length }];
     }),
   );
+  const taxaMes = Object.fromEntries(meses.map((m) => [m, doMes[m].k / doMes[m].n]));
   const alertas = [];
   const grade = [];
   for (const [chave, rs] of agrupar(
@@ -258,7 +267,10 @@ function alertasLogistica(rows, P) {
     grade.push({ estado, mes, total: rs.length, casos: k, taxa: k / rs.length });
     if (rs.length < P.minAvaliacoesMes || k < P.minCasos) continue;
     const inf = wilsonInf(k, rs.length);
-    const ref = taxaMes[mes];
+    // referência: os outros estados no mesmo mês (sem contar o próprio estado)
+    const outrosN = doMes[mes].n - rs.length;
+    if (outrosN < P.minAvaliacoesMes) continue;
+    const ref = Math.max((doMes[mes].k - k) / outrosN, 0.005);
     if (inf <= ref * P.lift) continue;
     alertas.push({
       estado,

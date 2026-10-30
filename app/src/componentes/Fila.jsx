@@ -54,7 +54,7 @@ function Item({ item, respondida, alternar }) {
   );
 }
 
-export function Fila({ itens, total, respondidas, alternar, exportar }) {
+export function Fila({ itens, total, respondidas, alternar, exportar, nota }) {
   const [limite, setLimite] = useState(30);
   const pendentes = itens.filter((i) => !respondidas.has(i.id)).length;
   return (
@@ -64,7 +64,7 @@ export function Fila({ itens, total, respondidas, alternar, exportar }) {
           <h2 id="t-fila">Fila de respostas</h2>
           <p className="secao-sub">
             Urgentes primeiro (não recebido, defeito, atendimento), depois as mais recentes. {pendentes} pendentes
-            {total > itens.length ? ` de ${itens.length} filtradas` : ''}.
+            {total > itens.length ? ` de ${itens.length} filtradas` : ''}.{nota && ` ${nota}`}
           </p>
         </div>
         <button type="button" className="btn btn-sec" onClick={exportar}>

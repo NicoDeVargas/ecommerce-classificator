@@ -15,7 +15,6 @@ transforma o volume em quatro listas de ação:
 O app é estático. Na demo, mostra os achados pré-calculados de 132 mil avaliações reais da Americanas.
 Com o CSV do vendedor, classifica tudo **no navegador**: as avaliações não saem do computador.
 
-<!-- capturas: rode o app e veja a seção "Verificação" -->
 
 ## Arquitetura: modelo pequeno para o volume, LLM só para rotular o treino
 
@@ -49,7 +48,7 @@ Latência: uma avaliação por vez, CPU de notebook de 12 núcleos.
 | Modelo | Tipo | Acerto | F1 macro | ECE ↓ | Latência | US$ / 1 mil |
 |---|---|---|---|---|---|---|
 | **Radar, ONNX int8** (este app) | pequeno, destilado do Opus | **87,3%** | 0,76 | **0,03** | **8 ms** | 0 |
-| Radar, ONNX int8 no navegador (WASM, 1 thread) | o mesmo, no Chrome | NAVEGADOR_ACERTO | NAVEGADOR_F1 | NAVEGADOR_ECE | NAVEGADOR_MS | 0 |
+| Radar, ONNX int8 no navegador (WASM, 1 thread) | o mesmo, no Chrome | 87,3% | 0,76 | 0,04 | 155 ms | 0 |
 | Radar, fp32 (PyTorch) | pequeno, destilado do Opus | 85,7% | 0,70 | 0,05 | 42 ms | 0 |
 | Claude Opus 5.5 + régua, lotes de 25 | o professor | 87,3% | 0,79 | – | – | 1,29 (0,60 em batch) |
 | Claude Opus 5.5 + régua, 1 por chamada | LLM de fronteira | 86,8% | 0,78 | 0,13 | 1,8 s | 6,94 |
@@ -70,9 +69,12 @@ O que a tabela mostra:
 2. **Lote de 25 não custou acerto.** No conjunto de desenvolvimento, o Opus + régua em lotes de 25 acertou
    89,2%, igual à chamada única (89,2%); no teste, 87,3% contra 86,8%. Em lote o custo cai de US$ 6,94 para
    US$ 1,29 por mil (US$ 0,60 pela Batch API).
-3. **int8 não perdeu acerto.** O int8 acertou 3 avaliações a mais que o fp32 (9 previsões mudaram). É ruído:
+3. **int8 não perdeu acerto, e o navegador dá o mesmo resultado.** O int8 acertou 3 avaliações a mais que o fp32 (9 previsões mudaram). É ruído:
    com 189 exemplos, o intervalo de 95% do acerto é de cerca de ±5 pontos. O ganho real é tamanho (436 → 110 MB)
-   e velocidade (19 → 8 ms no ONNX Runtime).
+   e velocidade (19 → 8 ms no ONNX Runtime). No Chrome (transformers.js, WASM), as 189 previsões saíram
+   idênticas às do Python (`results/preds_radar-navegador-int8_gab_teste.csv`). Detalhe que importou: na
+   quantização dinâmica a escala das ativações é calculada sobre o lote inteiro, então classificar em lotes
+   com padding mudava 4 de 189 previsões; o app e a inferência da B2W classificam uma avaliação por vez.
 4. **Calibração boa.** Com a temperatura ajustada na validação (T = 1,45) e embutida no classificador, o ECE
    ficou em 0,03: a confiança mostrada no app é usável para separar o que conferir à mão (< 60%).
 5. **Ponto fraco: atendimento.** Recall de 1 em 7 no teste (confunde com não recebido e com qualidade).
@@ -92,7 +94,40 @@ Total gasto: **US$ 4,43** (limite combinado: US$ 15), registrado chamada a chama
 
 ## Achados na B2W
 
-ACHADOS_B2W
+O modelo int8 classificou as 132.243 avaliações da B2W-Reviews01 (Americanas, jan–mai/2018) em 25 minutos
+de CPU, uma por vez (`ml/rodar_b2w.py`). O motor de alertas rodou sobre o resultado (`npm run achados`) e
+gerou `app/public/demo/achados_b2w.json`, que é a demo.
+
+- **Distribuição:** 67% elogio, 12% qualidade, 8% não recebido, 6% diferente do anúncio, 5% defeito,
+  1,5% atendimento, 0,8% atraso. Um terço das avaliações tem algum problema; 18.511 são urgentes
+  (não recebido, defeito, atendimento).
+- **Anúncio: 34 produtos em alerta, e a maior parte é falsificação.** Média da base: 6,2% de “diferente do
+  anunciado”. No topo, a boneca LOL Lil Sisters (22 de 35 avaliações, 63%, 10× a média), o Moto G4 Play
+  (20 de 44), dois emagrecedores (75% cada) e um carregador “turbo” (“até o selo da Anatel é falso”). Em 10
+  dos 20 primeiros, as frases de prova falam de produto falso ou não original. Para o vendedor, isso não é
+  ajuste de texto do anúncio: é tirar o produto do ar ou trocar de fornecedor. Os outros são clássicos de
+  anúncio: livro que vem sem os cards prometidos, kit de figurinhas com menos envelopes, tapete “bege” que
+  chega esverdeado, filtro com referências de modelo confusas.
+- **Lote: 20 semanas fora do histórico do produto.** Os mais claros: o Moto G4 Play na semana de 30/04
+  (5 de 11 avaliações com defeito ou qualidade, contra 11% no resto; “não aceita nenhum chip”), uma cadeira
+  Eames na semana de 07/05 (4 de 5 avaliações com defeito na chegada; “defeitos nos pés de madeira”), um smartwatch DZ09 e um
+  micro-ondas Consul na primeira semana de janeiro. O primeiro da lista, um conjunto de copos (21 de 66 na
+  semana de 19/02), **não é lote**: as frases são sobre preço (“Copos de ouro?”). O modelo põe reclamação de
+  preço em “qualidade”, e o alerta pegou um pico de preço. É por isso que cada alerta traz as frases.
+- **Logística: Rio de Janeiro em todos os meses, Norte e Nordeste em maio.** Na base inteira, 8,7% das
+  avaliações falam de entrega (não recebido ou atraso). O RJ ficou entre 1,8 e 2 vezes a taxa dos outros
+  estados em janeiro, março e abril (12,8% a 16,7%, com 4 mil avaliações por mês, quase todas “não recebi”).
+  Em maio, BA, PA, MA, CE, PE, PB, AL e SE ficaram entre 17% e 26%, de 1,8 a 2,7 vezes os outros estados.
+  Somando o Nordeste e o Pará: 14% em abril, 18% de 1 a 20 de maio e 24% de 21 a 31 de maio, enquanto o resto
+  do país ficou em 8–9%. A alta começa antes da greve dos caminhoneiros (21 a 31/05/2018) e piora durante ela;
+  os dados não dizem a causa.
+- **Por departamento:** Móveis tem 53% de avaliações com problema (19% não recebido, 10% diferente do
+  anúncio); Livros, 16%.
+
+Os números de alerta dependem dos limiares (`parametrosPara()` em `app/src/engine/alertas.js`): mínimo de
+20 avaliações e 5 casos por produto para anúncio, limite inferior de Wilson acima de 2× a média; z ≥ 3 e
+taxa ≥ 2× o histórico do produto para lote; 100 avaliações e 8 casos por estado-mês, 1,5× os outros estados,
+para logística.
 
 ## Como usar
 
@@ -100,12 +135,14 @@ ACHADOS_B2W
 
 **Suas avaliações:** “Minhas avaliações” → envie um CSV com a coluna `texto` (aceita também `avaliacao`,
 `comentario`, `review_text`) e, se tiver, `produto`, `data` (AAAA-MM-DD ou DD/MM/AAAA) e `estado` (UF ou nome).
-Há um CSV de exemplo no próprio app (`app/public/exemplo/avaliacoes-exemplo.csv`, 428 avaliações reais da B2W).
+Há um CSV de exemplo no próprio app (`app/public/exemplo/avaliacoes-exemplo.csv`, 467 avaliações reais da B2W, montado com produtos e um
+estado-mês dos alertas da demo para mostrar os três alertas).
 Sem `produto`, os alertas de anúncio e lote ficam de fora; sem `estado` e `data`, o de logística.
 Tudo pode ser exportado em CSV: alertas, fila com rascunhos e todas as avaliações classificadas.
 
 Na primeira vez o navegador baixa o modelo (110 MB) e guarda em cache. No navegador o modelo roda em
-WebAssembly com uma thread: NAVEGADOR_MS por avaliação, ou seja, 1.000 avaliações em NAVEGADOR_MIL.
+WebAssembly com uma thread: cerca de 135–155 ms por avaliação no Chrome sem interface deste notebook, ou seja,
+1.000 avaliações em 2 a 3 minutos.
 
 ### Rodar localmente
 

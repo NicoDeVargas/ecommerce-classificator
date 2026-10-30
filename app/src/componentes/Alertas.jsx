@@ -121,11 +121,13 @@ export function AlertasLote({ dados, alertas }) {
 
 export function AlertasLogistica({ dados, alertas, estadoFiltro }) {
   if (!dados) return <Vazio>Para este alerta, o CSV precisa da coluna <b>estado</b> ou <b>data</b>.</Vazio>;
-  const estados = dados.porEstado.filter((e) => e.total >= (dados.porEstado.length > 10 ? 50 : 1));
+  const grande = dados.porEstado.reduce((t, e) => t + e.total, 0) >= 20000;
+  const estados = dados.porEstado.filter((e) => e.total >= (grande ? 50 : 10));
   const meses = dados.meses;
   const idx = new Map(dados.grade.map((g) => [g.estado + '|' + g.mes, g]));
   const emAlerta = new Set(dados.alertas.map((a) => a.estado + '|' + a.mes));
   const linhasGrade = estados.slice(0, 27).map((e) => e.estado);
+  const minimoGrade = grande ? 30 : 5;
   return (
     <section aria-labelledby="t-log">
       <header className="secao-cab">
@@ -136,31 +138,6 @@ export function AlertasLogistica({ dados, alertas, estadoFiltro }) {
           </p>
         </div>
       </header>
-      {dados.alertas.length > 0 && (
-        <div className="cartoes cartoes-compactos">
-          {alertas.map((a) => (
-            <article className="cartao" key={a.estado + a.mes}>
-              <div className="cartao-topo">
-                <span className="selo selo-log">
-                  <IconeAlerta /> Logística
-                </span>
-              </div>
-              <h3>
-                {a.estado} · {mesNome(a.mes)}
-              </h3>
-              <p className="fato">
-                <b>{pct(a.taxa, 1)}</b> das avaliações falam de entrega ({num(a.casos)} de {num(a.total)}), {vezes(a.vezes)} a média do
-                mês. {num(a.nao_recebido)} ainda não tinham recebido.
-              </p>
-              <Provas provas={a.provas.slice(0, 2)} />
-              <p className="acao">
-                <b>Ação:</b> cobre a transportadora da região e avise os clientes com pedido em aberto antes que reclamem.
-              </p>
-            </article>
-          ))}
-        </div>
-      )}
-      {!dados.alertas.length && <Vazio>Nenhum estado com problema de entrega fora do normal no período.</Vazio>}
       <div className="paineis">
         {estados.length > 0 && (
           <div className="painel">
@@ -189,16 +166,45 @@ export function AlertasLogistica({ dados, alertas, estadoFiltro }) {
       {meses.length > 0 && linhasGrade.length > 0 && (
         <div className="painel">
           <h3 className="painel-titulo">Estado × mês</h3>
-          <p className="painel-nota">Contorno = alerta (bem acima da média do mês, com volume suficiente).</p>
+          <p className="painel-nota">
+            Contorno = alerta (bem acima dos outros estados no mesmo mês, com volume suficiente). “·” = menos de {minimoGrade} avaliações no mês.
+          </p>
           <Grade
             linhas={linhasGrade}
             colunas={meses}
             valor={(l, c) => idx.get(l + '|' + c)}
             rotuloColuna={mesNome}
             alerta={(l, c) => emAlerta.has(l + '|' + c)}
+            minimo={minimoGrade}
           />
         </div>
       )}
+      {dados.alertas.length > 0 && <h3 className="subtitulo">Estados e meses em alerta</h3>}
+      {dados.alertas.length > 0 && (
+        <div className="cartoes cartoes-compactos">
+          {alertas.map((a) => (
+            <article className="cartao" key={a.estado + a.mes}>
+              <div className="cartao-topo">
+                <span className="selo selo-log">
+                  <IconeAlerta /> Logística
+                </span>
+              </div>
+              <h3>
+                {a.estado} · {mesNome(a.mes)}
+              </h3>
+              <p className="fato">
+                <b>{pct(a.taxa, 1)}</b> das avaliações falam de entrega ({num(a.casos)} de {num(a.total)}), {vezes(a.vezes)} a taxa dos outros
+                estados no mês. {num(a.nao_recebido)} ainda não tinham recebido.
+              </p>
+              <Provas provas={a.provas.slice(0, 1)} />
+              <p className="acao">
+                <b>Ação:</b> cobre a transportadora da região e avise os clientes com pedido em aberto antes que reclamem.
+              </p>
+            </article>
+          ))}
+        </div>
+      )}
+      {!dados.alertas.length && <Vazio>Nenhum estado com problema de entrega fora do normal no período.</Vazio>}
     </section>
   );
 }

@@ -75,8 +75,8 @@ export function Semanas({ serie, destaque, altura = 120, rotuloCasos = 'casos' }
 }
 
 // Grade estado × mês (taxa de problemas de entrega), escala sequencial de um tom.
-export function Grade({ linhas, colunas, valor, rotuloColuna, alerta, max }) {
-  const m = max ?? Math.max(...linhas.flatMap((l) => colunas.map((c) => valor(l, c)?.taxa ?? 0)), 1e-9);
+export function Grade({ linhas, colunas, valor, rotuloColuna, alerta, max, minimo = 1 }) {
+  const m = max ?? Math.max(...linhas.flatMap((l) => colunas.map((c) => (valor(l, c)?.total >= minimo ? valor(l, c).taxa : 0))), 1e-9);
   return (
     <div className="grade-rolagem">
       <table className="grade">
@@ -97,6 +97,12 @@ export function Grade({ linhas, colunas, valor, rotuloColuna, alerta, max }) {
               {colunas.map((c) => {
                 const v = valor(l, c);
                 if (!v) return <td key={c} className="grade-vazia">–</td>;
+                if (v.total < minimo)
+                  return (
+                    <td key={c} className="grade-vazia" title={`${l}, ${rotuloColuna(c)}: só ${num(v.total)} avaliações`}>
+                      ·
+                    </td>
+                  );
                 const t = Math.min(1, v.taxa / m);
                 const forte = t > 0.55;
                 return (

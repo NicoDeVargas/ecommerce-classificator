@@ -203,7 +203,7 @@ export default function App() {
       </header>
 
       <main>
-        {modo === 'csv' && <Envio aoClassificar={classificar} estado={estado} />}
+        {modo === 'csv' && <Envio key={meu ? meu.achados.meta.fonte + meu.linhas.length : 'novo'} aoClassificar={classificar} estado={estado} />}
 
         {modo === 'demo' && !demo && (
           <div className="vazio">{demoErro ? `Não foi possível carregar a demo (${demoErro}).` : 'Carregando a demo…'}</div>
@@ -244,9 +244,9 @@ export default function App() {
                 </span>
               </div>
               <div className="kpi">
-                <span className="kpi-rotulo">Urgentes na fila</span>
+                <span className="kpi-rotulo">Urgentes: não recebido, defeito, SAC</span>
                 <span className="kpi-valor">
-                  {num(achados.fila.filter((f) => ['nao_recebido', 'defeito', 'atendimento'].includes(f.categoria)).length)}
+                  {num(achados.distribuicao.nao_recebido + achados.distribuicao.defeito + achados.distribuicao.atendimento)}
                 </span>
               </div>
             </div>
@@ -331,6 +331,11 @@ export default function App() {
                     setRespondidas(s);
                   }}
                   exportar={exportarFila}
+                  nota={
+                    achados.meta.parametros?.fila?.maxPorCategoria < 5000
+                      ? `Nesta base, a fila guarda as ${achados.meta.parametros.fila.maxPorCategoria} mais recentes de cada categoria.`
+                      : null
+                  }
                 />
               )}
               {aba === 'panorama' && <Panorama achados={achados} />}

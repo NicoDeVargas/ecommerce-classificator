@@ -20,10 +20,10 @@ for a in ach["anuncio"]["alertas"][:2]:
     partes.append(df[df.produto == a["produto"]].head(40))
 for a in ach["lote"]["alertas"][:1]:
     partes.append(df[df.produto == a["produto"]].head(80))
-if ach["logistica"]["alertas"]:
-    a = ach["logistica"]["alertas"][0]
-    partes.append(df[(df.estado == a["estado"]) & df.data.str.startswith(a["mes"])].sample(60, random_state=1))
-partes.append(df.sample(220, random_state=7))
+# logística: o estado-mês em alerta com a maior taxa, amostrado
+a = max(ach["logistica"]["alertas"], key=lambda x: x["taxa"])
+partes.append(df[(df.estado == a["estado"]) & df.data.str.startswith(a["mes"])].sample(80, random_state=1))
+partes.append(df.sample(240, random_state=7))
 ex = pd.concat(partes).drop_duplicates("texto").sample(frac=1, random_state=3)
 ex = ex[["texto", "produto", "data", "estado"]]
 os.makedirs(path("app/public/exemplo"), exist_ok=True)

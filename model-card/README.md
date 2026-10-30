@@ -83,6 +83,7 @@ nunca usadas para treinar nem para escolher nada (conjunto `gab_teste`). Latênc
 | Modelo | Acerto | F1 macro | ECE | Latência | US$ / 1 mil |
 |---|---|---|---|---|---|
 | **Este modelo, ONNX int8** | **87,3%** | **0,76** | **0,03** | **8 ms** | 0 |
+| Este modelo, ONNX int8 no navegador (transformers.js, WASM, 1 thread) | 87,3% | 0,76 | 0,04 | 155 ms | 0 |
 | Este modelo, fp32 (PyTorch) | 85,7% | 0,70 | 0,05 | 42 ms | 0 |
 | Claude Opus 5.5 + régua, lotes de 25 (o professor) | 87,3% | 0,79 | – | – | 1,29 (0,60 em batch) |
 | Claude Opus 5.5 + régua, uma chamada por avaliação | 86,8% | 0,78 | 0,13 | 1,8 s | 6,94 |
@@ -91,6 +92,9 @@ nunca usadas para treinar nem para escolher nada (conjunto `gab_teste`). Latênc
 | TF-IDF + regressão logística | 69,8% | 0,56 | 0,06 | 0,6 ms | 0 |
 
 O int8 acertou 3 avaliações a mais que o fp32 (9 previsões mudaram): é ruído, não ganho da quantização.
+No navegador, as 189 previsões são idênticas às do ONNX Runtime em Python, desde que se classifique uma
+avaliação por vez: na quantização dinâmica a escala das ativações é calculada sobre o lote inteiro, e lotes
+com padding mudam algumas previsões.
 Com 189 exemplos, o intervalo de 95% do acerto é de cerca de ±5 pontos.
 
 Por categoria (int8): `elogio` F1 0,97, `nao_recebido` 0,94, `qualidade` 0,80, `divergente` 0,71,
