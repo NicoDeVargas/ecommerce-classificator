@@ -46,6 +46,8 @@ def main():
     q8 = os.path.join(DST, "onnx", "model_quantized.onnx")
     quantize_dynamic(fp32, q8, weight_type=QuantType.QInt8)
     model.config.save_pretrained(DST)
+    # o treino truncou em 128 tokens; sem isto o transformers.js não trunca (e o BERT quebra acima de 512)
+    tok.model_max_length = 128
     tok.save_pretrained(DST)
     for f in ["treino_info.json"]:
         if os.path.exists(os.path.join(SRC, f)):

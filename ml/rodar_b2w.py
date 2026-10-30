@@ -18,7 +18,10 @@ sys.path.insert(0, os.path.dirname(__file__))
 from common import path  # noqa: E402
 from labels import NAMES  # noqa: E402
 
-MAX_LEN, BS = 128, 64
+# Uma avaliação por vez: na quantização int8 dinâmica a escala das ativações é calculada sobre o tensor
+# inteiro, então juntar avaliações num lote (com padding) muda levemente as previsões. Uma por vez é o
+# mesmo modo medido no gab_teste e o que o app faz no navegador.
+MAX_LEN, BS = 128, 1
 ONNX_DIR = path("models", "radar-avaliacoes-onnx")
 
 
@@ -45,7 +48,7 @@ def main():
         z = z - z.max(1, keepdims=True)
         e = np.exp(z)
         probs[ids] = e / e.sum(1, keepdims=True)
-        if (i // BS) % 200 == 0:
+        if i % 12800 == 0:
             print(f"{i}/{len(order)} · {time.time() - t0:.0f} s", flush=True)
     dt = time.time() - t0
     print(f"classificadas em {dt / 60:.1f} min ({dt / len(texts) * 1000:.2f} ms por avaliação em lote)", flush=True)

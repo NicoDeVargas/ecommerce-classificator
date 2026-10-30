@@ -103,8 +103,8 @@ export function AlertasLote({ dados, alertas }) {
             <h3>{a.produto}</h3>
             <p className="fato">
               Semana de <b>{diaMes(a.semana)}</b>: <b>{num(a.casos)}</b> reclamações de defeito ou qualidade em {num(a.totalSemana)}{' '}
-              avaliações (<b>{pct(a.taxa)}</b>), contra {pct(a.taxaBase)} nas outras semanas.
-              {a.defeito > 0 && ` ${num(a.defeito)} chegaram com defeito.`}
+              avaliações (<b>{pct(a.taxa)}</b>), contra {pct(a.taxaBase)} nas outras semanas: {num(a.defeito)} de defeito na chegada e{' '}
+              {num(a.qualidade)} de qualidade.
             </p>
             <Semanas serie={a.serie} destaque={a.semana} rotuloCasos="defeito + qualidade" altura={90} />
             <Termos termos={a.termos} />

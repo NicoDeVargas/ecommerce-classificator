@@ -34,5 +34,5 @@ export function baixar(nome, conteudo, tipo = 'text/csv;charset=utf-8') {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }

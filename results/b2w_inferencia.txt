@@ -1,0 +1,9 @@
+132243 avaliações; 25.2 min na CPU; 11.42 ms/avaliação em lotes de 1
+categoria
+elogio          89176
+qualidade       15307
+nao_recebido    10435
+divergente       8234
+defeito          6099
+atendimento      1977
+atraso           1015

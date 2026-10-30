@@ -206,7 +206,8 @@ function alertasLote(rows, P) {
       provas: melhoresProvas(casosSemana),
     });
   }
-  out.sort((a, b) => b.excesso - a.excesso);
+  // ordem: excesso sobre o histórico, com "chegou com defeito" pesando o dobro (é o sinal mais claro de lote)
+  out.sort((a, b) => b.excesso + b.defeito - (a.excesso + a.defeito));
   return { taxaBase: pg, alertas: out };
 }
 

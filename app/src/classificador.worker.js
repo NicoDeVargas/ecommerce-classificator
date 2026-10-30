@@ -25,6 +25,8 @@ async function carregar() {
         }
       },
     });
+    // mesmo corte do treino (128 tokens); também protege de textos acima do limite de 512 do BERT
+    classificar.tokenizer.model_max_length = 128;
   }
   return classificar;
 }
@@ -38,7 +40,9 @@ self.onmessage = async (e) => {
       return;
     }
     const out = [];
-    const LOTE = 8;
+    // uma por vez: o int8 dinâmico calcula a escala sobre o lote inteiro, e lotes com padding
+    // mudariam levemente as previsões em relação ao que foi medido no gab_teste
+    const LOTE = 1;
     const t0 = performance.now();
     for (let i = 0; i < textos.length; i += LOTE) {
       const r = await clf(textos.slice(i, i + LOTE), { top_k: 1, truncation: true, max_length: 128 });
