@@ -10,7 +10,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "achados": "node scripts/gerar-achados.mjs",
-    "test": "node --test scripts/"
+    "test": "node --test scripts/*.test.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "3.8.1",
