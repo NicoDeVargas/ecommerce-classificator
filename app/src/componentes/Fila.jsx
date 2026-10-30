@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { NOME, URGENTES } from '../engine/categorias.js';
-import { dataCurta, pct } from '../formato.js';
+import { NOME } from '../engine/categorias.js';
+import { dataCurta } from '../formato.js';
 
 function Item({ item, respondida, alternar }) {
   const [texto, setTexto] = useState(item.rascunho);
@@ -16,37 +16,32 @@ function Item({ item, respondida, alternar }) {
     }
   };
   return (
-    <li className={'fila-item' + (respondida ? ' is-respondida' : '')}>
-      <div className="fila-meta">
-        <span className={`cat cat-${item.categoria}`}>
-          {URGENTES.has(item.categoria) && <span className="ponto" aria-hidden="true" />}
-          {NOME[item.categoria]}
-        </span>
-        {item.data && <span>{dataCurta(item.data)}</span>}
-        {item.estado && <span>{item.estado}</span>}
-        <span className="conf" title="Confiança do modelo nesta categoria">
-          {pct(item.confianca)}
-        </span>
-        {item.revisar && <span className="revisar">conferir categoria</span>}
-      </div>
-      {item.produto && <div className="fila-produto">{item.produto}</div>}
-      <p className="fila-texto">{item.texto}</p>
+    <li className={'item fila-item' + (respondida ? ' is-respondida' : '')}>
+      <p className="fila-meta">
+        <span className={`motivo motivo-${item.categoria}`}>{NOME[item.categoria]}</span>
+        {[item.estado, item.data && dataCurta(item.data)].filter(Boolean).join(', ')}
+        {item.revisar && <span className="revisar"> · motivo incerto, confira</span>}
+      </p>
+      {item.produto && <h3>{item.produto}</h3>}
+      <blockquote className="citacao">
+        <p>{item.texto}</p>
+      </blockquote>
       <div className="fila-acoes">
-        <button type="button" className="btn btn-sec" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
-          {aberto ? 'Fechar rascunho' : 'Ver rascunho'}
+        <button type="button" className="btn" onClick={() => setAberto(!aberto)} aria-expanded={aberto}>
+          {aberto ? 'Fechar resposta' : 'Escrever resposta'}
         </button>
         <button type="button" className="btn btn-sec" onClick={alternar} aria-pressed={respondida}>
-          {respondida ? 'Respondida ✓' : 'Marcar respondida'}
+          {respondida ? 'Respondida' : 'Marcar como respondida'}
         </button>
       </div>
       {aberto && (
         <div className="rascunho">
-          <label>
-            <span className="rotulo-campo">Rascunho de resposta (edite antes de enviar)</span>
-            <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={5} />
+          <label className="rotulo" htmlFor={'r-' + item.id}>
+            Rascunho pronto para editar
           </label>
+          <textarea id={'r-' + item.id} value={texto} onChange={(e) => setTexto(e.target.value)} rows={5} />
           <button type="button" className="btn" onClick={copiar}>
-            {copiado ? 'Copiado' : 'Copiar resposta'}
+            {copiado ? 'Copiada' : 'Copiar resposta'}
           </button>
         </div>
       )}
@@ -54,32 +49,26 @@ function Item({ item, respondida, alternar }) {
   );
 }
 
-export function Fila({ itens, total, respondidas, alternar, exportar, nota }) {
+export function Fila({ itens, respondidas, alternar, nota }) {
   const [limite, setLimite] = useState(30);
   const pendentes = itens.filter((i) => !respondidas.has(i.id)).length;
   return (
-    <section aria-labelledby="t-fila">
+    <section className="secao secao-fila">
       <header className="secao-cab">
-        <div>
-          <h2 id="t-fila">Fila de respostas</h2>
-          <p className="secao-sub">
-            Urgentes primeiro (não recebido, defeito, atendimento), depois as mais recentes. {pendentes} pendentes
-            {total > itens.length ? ` de ${itens.length} filtradas` : ''}.{nota && ` ${nota}`}
-          </p>
-        </div>
-        <button type="button" className="btn btn-sec" onClick={exportar}>
-          Exportar fila (CSV)
-        </button>
+        <h2>Responder clientes</h2>
+        <p>
+          {pendentes} sem resposta. Primeiro quem não recebeu, recebeu com defeito ou ficou sem atendimento.{nota && ` ${nota}`}
+        </p>
       </header>
-      {!itens.length && <div className="vazio">Nenhuma avaliação na fila com esses filtros.</div>}
-      <ol className="fila">
+      {!itens.length && <p className="vazio">Nenhuma avaliação com esses filtros.</p>}
+      <ol className="itens">
         {itens.slice(0, limite).map((i) => (
           <Item key={i.id} item={i} respondida={respondidas.has(i.id)} alternar={() => alternar(i.id)} />
         ))}
       </ol>
       {itens.length > limite && (
         <button type="button" className="btn btn-sec btn-largo" onClick={() => setLimite(limite + 30)}>
-          Mostrar mais ({itens.length - limite} restantes)
+          Mostrar mais {Math.min(30, itens.length - limite)}
         </button>
       )}
     </section>

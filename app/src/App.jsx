@@ -5,15 +5,16 @@ import { Fila } from './componentes/Fila.jsx';
 import { calcularAchados } from './engine/alertas.js';
 import { CATEGORIAS, NOME } from './engine/categorias.js';
 import { paraCSV } from './engine/csv.js';
-import { baixar, dataCurta, num, pct } from './formato.js';
+import { baixar, mesNome, num } from './formato.js';
 
 const BASE = import.meta.env.BASE_URL;
+// Cada seção é uma ação do vendedor; os filtros mostrados dependem do que a seção usa.
 const ABAS = [
-  { id: 'anuncio', nome: 'Anúncio' },
-  { id: 'lote', nome: 'Lote' },
-  { id: 'logistica', nome: 'Logística' },
-  { id: 'fila', nome: 'Fila de respostas' },
-  { id: 'panorama', nome: 'Panorama' },
+  { id: 'anuncio', nome: 'Corrigir anúncios', filtros: ['busca', 'departamento'] },
+  { id: 'lote', nome: 'Falar com fornecedores', filtros: ['busca', 'departamento'] },
+  { id: 'logistica', nome: 'Cobrar entregas', filtros: ['estado'] },
+  { id: 'fila', nome: 'Responder clientes', filtros: ['busca', 'categoria', 'estado'] },
+  { id: 'panorama', nome: 'Do que falam', filtros: [] },
 ];
 
 function lerHash() {
@@ -175,26 +176,25 @@ export default function App() {
     logistica: achados.logistica?.totalAlertas ?? null,
     fila: achados.fila.length,
   };
-  const problemas = achados ? 1 - achados.distribuicao.elogio / achados.meta.total : null;
+  const totalAlertas = contagem ? (contagem.anuncio || 0) + (contagem.lote || 0) + (contagem.logistica || 0) : 0;
+  const atual = ABAS.find((a) => a.id === aba);
+  const mostra = (f) => atual.filtros.includes(f);
+  const periodo = achados?.meta.inicio && `de ${mesNome(achados.meta.inicio.slice(0, 7))} a ${mesNome(achados.meta.fim.slice(0, 7))}`;
 
   return (
     <div className="app">
       <header className="topo">
-        <div className="marca">
-          <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
-            <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" strokeWidth="2" opacity=".35" />
-            <circle cx="16" cy="16" r="7.5" fill="none" stroke="currentColor" strokeWidth="2" opacity=".6" />
-            <path d="M16 16 27 9" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-            <circle cx="22.5" cy="11.6" r="2.4" fill="var(--alerta)" />
+        <a className="marca" href="#modo=demo&aba=anuncio" onClick={() => setModo('demo')}>
+          <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" strokeWidth="2.4" />
+            <path d="M16 16 26 9" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+            <circle cx="22" cy="11.8" r="2.6" fill="var(--fornecedor)" />
           </svg>
-          <div>
-            <h1>Radar de avaliações</h1>
-            <p>Transforma avaliações de clientes em ações: corrigir anúncio, falar com o fornecedor, cobrar a entrega, responder.</p>
-          </div>
-        </div>
+          Radar de avaliações
+        </a>
         <nav className="modos" aria-label="Fonte dos dados">
           <button type="button" className={modo === 'demo' ? 'is-ativo' : ''} onClick={() => setModo('demo')} aria-pressed={modo === 'demo'}>
-            Demo B2W
+            Exemplo
           </button>
           <button type="button" className={modo === 'csv' ? 'is-ativo' : ''} onClick={() => setModo('csv')} aria-pressed={modo === 'csv'}>
             Minhas avaliações
@@ -206,139 +206,118 @@ export default function App() {
         {modo === 'csv' && <Envio key={meu ? meu.achados.meta.fonte + meu.linhas.length : 'novo'} aoClassificar={classificar} estado={estado} />}
 
         {modo === 'demo' && !demo && (
-          <div className="vazio">{demoErro ? `Não foi possível carregar a demo (${demoErro}).` : 'Carregando a demo…'}</div>
+          <p className="vazio">{demoErro ? `Não foi possível carregar o exemplo (${demoErro}).` : 'Carregando o exemplo…'}</p>
         )}
 
         {achados && (
           <>
-            <div className="contexto">
+            <section className="resumo" aria-label="Resumo">
+              <h1>
+                {num(totalAlertas)} problemas pedem ação{contagem.fila ? ` e ${num(contagem.fila)} clientes esperam resposta` : ''}.
+              </h1>
               {modo === 'demo' ? (
                 <p>
-                  <b>Demo:</b> {num(achados.meta.total)} avaliações reais da Americanas (base B2W-Reviews01,{' '}
-                  {dataCurta(achados.meta.inicio)} a {dataCurta(achados.meta.fim)}), classificadas pelo modelo deste projeto.
+                  Exemplo com {num(achados.meta.total)} avaliações reais da Americanas{periodo ? `, ${periodo}` : ''}. Para ver as da sua
+                  loja, use <button type="button" className="link" onClick={() => setModo('csv')}>Minhas avaliações</button>.
                 </p>
               ) : (
                 <p>
-                  <b>{achados.meta.fonte}:</b> {num(achados.meta.total)} avaliações classificadas no navegador
-                  {achados.meta.msPorAvaliacao ? ` (${Math.round(achados.meta.msPorAvaliacao)} ms por avaliação)` : ''}.{' '}
+                  {achados.meta.fonte}: {num(achados.meta.total)} avaliações classificadas no seu navegador
+                  {achados.meta.msPorAvaliacao ? `, ${Math.round(achados.meta.msPorAvaliacao)} ms cada` : ''}.{' '}
                   <button type="button" className="link" onClick={exportarClassificadas}>
-                    Baixar todas classificadas (CSV)
+                    Baixar todas classificadas
                   </button>
                 </p>
               )}
-            </div>
+            </section>
 
-            <div className="kpis">
-              <div className="kpi">
-                <span className="kpi-rotulo">Avaliações</span>
-                <span className="kpi-valor">{num(achados.meta.total)}</span>
-              </div>
-              <div className="kpi">
-                <span className="kpi-rotulo">Com algum problema</span>
-                <span className="kpi-valor">{pct(problemas)}</span>
-              </div>
-              <div className="kpi">
-                <span className="kpi-rotulo">Alertas de anúncio · lote · logística</span>
-                <span className="kpi-valor">
-                  {[contagem.anuncio, contagem.lote, contagem.logistica].map((c) => (c == null ? '–' : num(c))).join(' · ')}
-                </span>
-              </div>
-              <div className="kpi">
-                <span className="kpi-rotulo">Urgentes: não recebido, defeito, SAC</span>
-                <span className="kpi-valor">
-                  {num(achados.distribuicao.nao_recebido + achados.distribuicao.defeito + achados.distribuicao.atendimento)}
-                </span>
-              </div>
-            </div>
+            <div className="mesa">
+              <nav className="pauta" aria-label="Ações">
+                {ABAS.map((a) => (
+                  <button
+                    type="button"
+                    key={a.id}
+                    className={`pauta-item pauta-${a.id}` + (aba === a.id ? ' is-ativa' : '')}
+                    aria-current={aba === a.id ? 'page' : undefined}
+                    onClick={() => setAba(a.id)}
+                  >
+                    <span>{a.nome}</span>
+                    {contagem[a.id] != null && <span className="pauta-n">{num(contagem[a.id])}</span>}
+                  </button>
+                ))}
+              </nav>
 
-            <div className="filtros" role="search">
-              <label className="campo campo-busca">
-                <span className="rotulo-campo">Buscar produto ou texto</span>
-                <input
-                  type="search"
-                  value={filtros.busca}
-                  placeholder="ex.: fone, cortina, voltagem"
-                  onChange={(e) => setFiltros({ ...filtros, busca: e.target.value })}
-                />
-              </label>
-              {departamentos.length > 0 && (
-                <label className="campo">
-                  <span className="rotulo-campo">Departamento</span>
-                  <select value={filtros.departamento} onChange={(e) => setFiltros({ ...filtros, departamento: e.target.value })}>
-                    <option value="">Todos</option>
-                    {departamentos.map((d) => (
-                      <option key={d}>{d}</option>
-                    ))}
-                  </select>
-                </label>
-              )}
-              {estados.length > 0 && (
-                <label className="campo">
-                  <span className="rotulo-campo">Estado</span>
-                  <select value={filtros.estado} onChange={(e) => setFiltros({ ...filtros, estado: e.target.value })}>
-                    <option value="">Todos</option>
-                    {estados.map((d) => (
-                      <option key={d}>{d}</option>
-                    ))}
-                  </select>
-                </label>
-              )}
-              <label className="campo">
-                <span className="rotulo-campo">Categoria (fila)</span>
-                <select value={filtros.categoria} onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })}>
-                  <option value="">Todas</option>
-                  {CATEGORIAS.filter((c) => c !== 'elogio').map((c) => (
-                    <option key={c} value={c}>
-                      {NOME[c]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button type="button" className="btn btn-sec" onClick={exportarAlertas}>
-                Exportar alertas (CSV)
-              </button>
-            </div>
+              <div className="conteudo">
+                {atual.filtros.length > 0 && (
+                  <div className="filtros" role="search">
+                    {mostra('busca') && (
+                      <input
+                        type="search"
+                        aria-label="Buscar produto ou trecho"
+                        value={filtros.busca}
+                        placeholder="Buscar produto ou trecho"
+                        onChange={(e) => setFiltros({ ...filtros, busca: e.target.value })}
+                      />
+                    )}
+                    {mostra('departamento') && departamentos.length > 0 && (
+                      <select
+                        aria-label="Departamento"
+                        value={filtros.departamento}
+                        onChange={(e) => setFiltros({ ...filtros, departamento: e.target.value })}
+                      >
+                        <option value="">Todos os departamentos</option>
+                        {departamentos.map((d) => (
+                          <option key={d}>{d}</option>
+                        ))}
+                      </select>
+                    )}
+                    {mostra('categoria') && (
+                      <select aria-label="Motivo" value={filtros.categoria} onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })}>
+                        <option value="">Todos os motivos</option>
+                        {CATEGORIAS.filter((c) => c !== 'elogio').map((c) => (
+                          <option key={c} value={c}>
+                            {NOME[c]}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {mostra('estado') && estados.length > 0 && (
+                      <select aria-label="Estado" value={filtros.estado} onChange={(e) => setFiltros({ ...filtros, estado: e.target.value })}>
+                        <option value="">Todos os estados</option>
+                        {estados.map((d) => (
+                          <option key={d}>{d}</option>
+                        ))}
+                      </select>
+                    )}
+                    <button type="button" className="btn btn-sec" onClick={aba === 'fila' ? exportarFila : exportarAlertas}>
+                      Exportar CSV
+                    </button>
+                  </div>
+                )}
 
-            <nav className="abas" aria-label="Seções">
-              {ABAS.map((a) => (
-                <button
-                  type="button"
-                  key={a.id}
-                  className={aba === a.id ? 'is-ativa' : ''}
-                  aria-current={aba === a.id ? 'page' : undefined}
-                  onClick={() => setAba(a.id)}
-                >
-                  {a.nome}
-                  {contagem[a.id] != null && <span className="contador">{num(contagem[a.id])}</span>}
-                </button>
-              ))}
-            </nav>
-
-            <div className="conteudo">
-              {aba === 'anuncio' && <AlertasAnuncio dados={achados.anuncio} alertas={filtrado.anuncio} />}
-              {aba === 'lote' && <AlertasLote dados={achados.lote} alertas={filtrado.lote} />}
-              {aba === 'logistica' && (
-                <AlertasLogistica dados={achados.logistica} alertas={filtrado.logistica} estadoFiltro={filtros.estado} />
-              )}
-              {aba === 'fila' && (
-                <Fila
-                  itens={filtrado.fila}
-                  total={achados.fila.length}
-                  respondidas={respondidas}
-                  alternar={(id) => {
-                    const s = new Set(respondidas);
-                    s.has(id) ? s.delete(id) : s.add(id);
-                    setRespondidas(s);
-                  }}
-                  exportar={exportarFila}
-                  nota={
-                    achados.meta.parametros?.fila?.maxPorCategoria < 5000
-                      ? `Nesta base, a fila guarda as ${achados.meta.parametros.fila.maxPorCategoria} mais recentes de cada categoria.`
-                      : null
-                  }
-                />
-              )}
-              {aba === 'panorama' && <Panorama achados={achados} />}
+                {aba === 'anuncio' && <AlertasAnuncio dados={achados.anuncio} alertas={filtrado.anuncio} />}
+                {aba === 'lote' && <AlertasLote dados={achados.lote} alertas={filtrado.lote} />}
+                {aba === 'logistica' && (
+                  <AlertasLogistica dados={achados.logistica} alertas={filtrado.logistica} estadoFiltro={filtros.estado} />
+                )}
+                {aba === 'fila' && (
+                  <Fila
+                    itens={filtrado.fila}
+                    respondidas={respondidas}
+                    alternar={(id) => {
+                      const s = new Set(respondidas);
+                      s.has(id) ? s.delete(id) : s.add(id);
+                      setRespondidas(s);
+                    }}
+                    nota={
+                      achados.meta.parametros?.fila?.maxPorCategoria < 5000
+                        ? `No exemplo, a fila guarda as ${achados.meta.parametros.fila.maxPorCategoria} mais recentes de cada motivo.`
+                        : null
+                    }
+                  />
+                )}
+                {aba === 'panorama' && <Panorama achados={achados} />}
+              </div>
             </div>
           </>
         )}
@@ -346,11 +325,9 @@ export default function App() {
 
       <footer className="rodape">
         <p>
-          Modelo pequeno (BERTimbau, 110 M parâmetros, int8) treinado com rótulos do Claude Opus 5.5 e medido contra um gabarito humano.
-          A classificação roda no navegador; nenhuma avaliação é enviada para servidor.{' '}
-          <a href="https://github.com/NicoDeVargas/ecommerce-classificator">Código e avaliação</a>
+          Classificação feita por um modelo pequeno (BERTimbau int8) que roda no navegador: nenhuma avaliação sai do seu computador.{' '}
+          <a href="https://github.com/NicoDeVargas/ecommerce-classificator">Como foi feito</a>. Dados do exemplo: B2W-Reviews01, CC BY 4.0.
         </p>
-        <p>Dados da demo: B2W-Reviews01 (Americanas), licença CC BY 4.0.</p>
       </footer>
     </div>
   );
