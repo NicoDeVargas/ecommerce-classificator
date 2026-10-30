@@ -17,7 +17,7 @@ Com o CSV do vendedor, classifica tudo **no navegador**: as avaliações não sa
 
 **[Abrir o app](https://nicodevargas.github.io/ecommerce-classificator/)** · [modelo no Hugging Face](https://huggingface.co/NicoDeVargas/radar-avaliacoes-bertimbau)
 
-![Demo: alertas de anúncio, lote e logística, e a fila de respostas com rascunho](docs/demo.gif)
+![Demo: anúncios a corrigir, fornecedores, entregas e a fila de respostas com rascunho](docs/demo.gif)
 
 
 ## Arquitetura: modelo pequeno para o volume, LLM só para rotular o treino
