@@ -15,6 +15,10 @@ transforma o volume em quatro listas de ação:
 O app é estático. Na demo, mostra os achados pré-calculados de 132 mil avaliações reais da Americanas.
 Com o CSV do vendedor, classifica tudo **no navegador**: as avaliações não saem do computador.
 
+**[Abrir o app](https://nicodevargas.github.io/ecommerce-classificator/)** · [modelo no Hugging Face](https://huggingface.co/NicoDeVargas/radar-avaliacoes-bertimbau)
+
+![Demo: alertas de anúncio, lote e logística, e a fila de respostas com rascunho](docs/demo.gif)
+
 
 ## Arquitetura: modelo pequeno para o volume, LLM só para rotular o treino
 
